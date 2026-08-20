@@ -21,7 +21,6 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/employees', require('./routes/employees'));
 app.use('/api', require('./routes/documents'));
 app.use('/api/leave', require('./routes/leave'));
-app.use('/api/payroll', require('./routes/payroll'));
 app.use('/api/settings', require('./routes/settings'));
 
 // Health check

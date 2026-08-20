@@ -5,7 +5,6 @@ const NAV_ITEMS = [
   { label: 'Dashboard', icon: 'dashboard', href: '/dashboard', fill: true },
   { label: 'Employees', icon: 'group', href: '/employees' },
   { label: 'Leave Management', icon: 'event_busy', href: '/leave' },
-  { label: 'Payroll & Payslips', icon: 'receipt_long', href: '/payroll' },
   { label: 'Settings', icon: 'settings', href: '/settings' },
 ];
 

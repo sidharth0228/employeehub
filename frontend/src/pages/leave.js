@@ -85,14 +85,13 @@ export default async function leavePage() {
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-gray-50 border-b border-outline-variant">
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Employee</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Type</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Duration</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Days</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Reason</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Applied On</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Status</th>
-              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold text-right">Decision Actions</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Employee</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Type</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Duration</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Days</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Applied</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Status</th>
+              <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#F3F4F6] font-body-md text-on-surface">
@@ -106,36 +105,26 @@ export default async function leavePage() {
                         ${avatarInitials(l.employee_name || '')}
                       </div>
                       <div>
-                        <p class="font-medium text-on-surface">${l.employee_name || 'Unknown'}</p>
+                        <p class="font-medium">${l.employee_name || 'Unknown'}</p>
                         <p class="text-xs text-secondary">${l.emp_code || ''} · ${l.department || ''}</p>
                       </div>
                     </div>
                   </td>
-                  <td class="py-3 px-4 font-medium text-sm">${l.leave_type}</td>
-                  <td class="py-3 px-4 text-xs font-medium">${formatDate(l.start_date)} – ${formatDate(l.end_date)}</td>
-                  <td class="py-3 px-4 font-bold text-sm">${l.days_count}d</td>
-                  <td class="py-3 px-4">
-                    <div class="max-w-[220px]">
-                      <p class="text-xs text-on-surface font-medium leading-tight" title="${l.reason || ''}">${l.reason || '—'}</p>
-                      ${l.notes ? `<p class="text-[11px] text-secondary italic mt-0.5">Admin note: ${l.notes}</p>` : ''}
-                    </div>
-                  </td>
-                  <td class="py-3 px-4 text-secondary text-xs">${formatDate(l.applied_at)}</td>
+                  <td class="py-3 px-4">${l.leave_type}</td>
+                  <td class="py-3 px-4">${formatDate(l.start_date)} – ${formatDate(l.end_date)}</td>
+                  <td class="py-3 px-4 font-medium">${l.days_count}d</td>
+                  <td class="py-3 px-4 text-secondary">${formatDate(l.applied_at)}</td>
                   <td class="py-3 px-4">${statusBadge(l.status)}</td>
                   <td class="py-3 px-4 text-right">
-                    <div class="flex gap-2 justify-end items-center">
+                    <div class="flex gap-2 justify-end">
                       ${l.status === 'pending' ? `
-                        <button class="approve-btn bg-[#065F46] text-white hover:bg-[#047857] px-3.5 py-1.5 rounded-lg font-bold text-xs transition-colors shadow-soft cursor-pointer" data-id="${l._id}" title="Accept and Approve Leave">
-                          Accept
-                        </button>
-                        <button class="reject-btn bg-[#FEE2E2] text-[#991B1B] hover:bg-[#FECACA] px-3.5 py-1.5 rounded-lg font-bold text-xs transition-colors cursor-pointer" data-id="${l._id}" title="Reject Leave">
-                          Reject
-                        </button>
+                        <button class="approve-btn bg-[#D1FAE5] text-[#065F46] hover:bg-[#A7F3D0] px-3 py-1 rounded-lg font-medium text-xs transition-colors" data-id="${l._id}">Approve</button>
+                        <button class="reject-btn bg-[#FEE2E2] text-[#991B1B] hover:bg-[#FECACA] px-3 py-1 rounded-lg font-medium text-xs transition-colors" data-id="${l._id}">Reject</button>
                       ` : `
-                        <span class="text-xs text-secondary font-medium">${l.status === 'approved' ? '✓ Accepted' : '✕ Rejected'}</span>
+                        <span class="text-xs text-secondary">${l.notes ? `Note: ${l.notes.slice(0, 30)}` : '—'}</span>
                       `}
-                      <button class="view-emp-btn text-secondary hover:text-primary font-medium text-xs p-1" data-emp="${l.employee_id}" title="View Employee Profile">
-                        <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+                      <button class="view-emp-btn text-secondary hover:text-primary font-medium text-xs" data-emp="${l.employee_id}">
+                        <span class="material-symbols-outlined text-[16px]">open_in_new</span>
                       </button>
                     </div>
                   </td>

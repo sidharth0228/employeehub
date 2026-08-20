@@ -9,7 +9,6 @@ import settingsPage from './pages/settings.js';
 import documentCategoriesPage from './pages/documentCategories.js';
 import documentsPage from './pages/documents.js';
 import onboardingPage from './pages/onboarding.js';
-import payrollPage from './pages/payroll.js';
 
 // Register all routes
 register('/', loginPage);
@@ -21,8 +20,6 @@ register('/employees/:id/onboarding', onboardingPage);
 register('/employees/:id', employeeProfilePage);
 register('/documents', documentsPage);
 register('/onboarding', onboardingPage);
-register('/payroll', payrollPage);
-register('/payslips', payrollPage);
 register('/leave', leavePage);
 register('/settings', settingsPage);
 register('/settings/document-categories', documentCategoriesPage);
