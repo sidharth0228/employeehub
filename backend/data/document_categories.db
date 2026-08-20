@@ -1,0 +1,11 @@
+{"name":"Passport","is_required":true,"description":"Employee passport copy","created_at":"2026-08-20T19:32:14.248Z","_id":"C1KemI0mBRSoaqCQ"}
+{"name":"Aadhaar Card","is_required":true,"description":"Government ID proof","created_at":"2026-08-20T19:32:14.483Z","_id":"USyuT0CTQPJeD333"}
+{"name":"PAN Card","is_required":true,"description":"Tax identification","created_at":"2026-08-20T19:32:14.485Z","_id":"ndKS3wm0ZtNVl0u5"}
+{"name":"Work Permit","is_required":false,"description":"Work authorization (for foreign nationals)","created_at":"2026-08-20T19:32:14.486Z","_id":"YwnGXpjmhcxdBm7i"}
+{"name":"Educational Certificates","is_required":true,"description":"Degree / Diploma certificates","created_at":"2026-08-20T19:32:14.488Z","_id":"p0k0Wrdqp8GSgFsz"}
+{"name":"Experience Letters","is_required":false,"description":"Previous employment letters","created_at":"2026-08-20T19:32:14.489Z","_id":"kbZqc2KEGydWDmdn"}
+{"name":"Bank Statement","is_required":true,"description":"Recent bank statement for salary","created_at":"2026-08-20T19:32:14.491Z","_id":"VKv1MRAzOoh2lVbS"}
+{"name":"Photo","is_required":true,"description":"Recent passport-size photograph","created_at":"2026-08-20T19:32:14.492Z","_id":"wMw7Cnipmm9PxYJ5"}
+{"name":"10th Pass Certificate","is_required":true,"description":"Pass certificate proof","created_at":"2026-08-20T20:26:43.675Z","_id":"JIiUNkMt1uRI32dS"}
+{"name":"12th pass Certificate","is_required":false,"description":"Pass certificate proof","created_at":"2026-08-20T20:27:04.793Z","_id":"yYTv7PiDlIv5F5yZ"}
+{"$$deleted":true,"_id":"yYTv7PiDlIv5F5yZ"}
