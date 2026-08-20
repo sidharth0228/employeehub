@@ -31,6 +31,7 @@ export default async function employeeProfilePage({ id }) {
     const [bg, color] = getAvatarColor(`${employee.first_name} ${employee.last_name}`);
     const tabs = [
       { id: 'info', label: 'Personal Info', icon: 'person' },
+      { id: 'payroll', label: 'Salary & Payslips', icon: 'payments' },
       { id: 'documents', label: 'Documents', icon: 'folder' },
       { id: 'leaves', label: 'Leave History', icon: 'event_busy' },
       { id: 'onboarding', label: 'Onboarding', icon: 'assignment_ind' },
@@ -136,6 +137,7 @@ export default async function employeeProfilePage({ id }) {
     if (!content) return;
 
     if (activeTab === 'info') renderInfoTab(content);
+    else if (activeTab === 'payroll') renderPayrollTab(content);
     else if (activeTab === 'documents') renderDocumentsTab(content);
     else if (activeTab === 'leaves') renderLeavesTab(content);
     else if (activeTab === 'onboarding') renderOnboardingTab(content);
@@ -613,5 +615,317 @@ export default async function employeeProfilePage({ id }) {
         renderTabContent();
       } catch (err) { showToast('Failed: ' + err.message, 'error'); }
     });
+  }
+
+  async function renderPayrollTab(content) {
+    content.innerHTML = `<div class="flex justify-center p-8"><span class="material-symbols-outlined text-primary text-4xl animate-spin">autorenew</span></div>`;
+
+    function formatINR(val) {
+      if (val === undefined || val === null || isNaN(val)) return '₹0';
+      return '₹' + Number(val).toLocaleString('en-IN');
+    }
+
+    try {
+      const data = await api.payroll.getEmployee(id);
+      const emp = data.employee;
+      const payslips = data.payslips || [];
+
+      const ctc = emp.ctc_annual || 600000;
+      const gross = emp.monthly_gross || Math.round(ctc / 12);
+      const inHand = emp.in_hand_monthly || Math.round(gross * 0.85);
+
+      content.innerHTML = `
+        <div class="space-y-xl">
+          <!-- Compensation Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+            <div class="bg-surface rounded-xl border border-outline-variant p-md shadow-soft">
+              <span class="text-xs text-secondary font-semibold uppercase block mb-1">Annual CTC</span>
+              <h3 class="font-headline-md text-on-surface font-bold text-2xl">${formatINR(ctc)}</h3>
+              <p class="text-xs text-secondary mt-1">Cost to Company (Per Annum)</p>
+            </div>
+            <div class="bg-surface rounded-xl border border-outline-variant p-md shadow-soft">
+              <span class="text-xs text-secondary font-semibold uppercase block mb-1">Monthly Gross</span>
+              <h3 class="font-headline-md text-primary font-bold text-2xl">${formatINR(gross)}</h3>
+              <p class="text-xs text-secondary mt-1">Before tax and deductions</p>
+            </div>
+            <div class="bg-surface rounded-xl border border-outline-variant p-md shadow-soft bg-[#D1FAE5]/30 border-[#065F46]/30">
+              <span class="text-xs text-[#065F46] font-semibold uppercase block mb-1">Net Monthly In-Hand</span>
+              <h3 class="font-headline-md text-[#065F46] font-bold text-2xl">${formatINR(inHand)}</h3>
+              <p class="text-xs text-[#065F46] mt-1">Estimated Take-home payout</p>
+            </div>
+          </div>
+
+          <!-- Salary Structure & Bank Breakdown -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-xl">
+            <!-- Salary Components -->
+            <div class="bg-surface rounded-xl border border-outline-variant shadow-soft p-xl">
+              <div class="flex justify-between items-center mb-lg">
+                <h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[20px]">payments</span>
+                  Salary Components
+                </h3>
+                <button id="edit-salary-pkg-btn" class="bg-primary text-on-primary px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-on-primary-fixed-variant transition-colors shadow-soft">
+                  Edit Package
+                </button>
+              </div>
+
+              <div class="space-y-3 divide-y divide-gray-100 text-sm">
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">Basic Salary</span>
+                  <span class="font-semibold text-on-surface">${formatINR(emp.basic_salary || Math.round(gross * 0.5))}</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">House Rent Allowance (HRA)</span>
+                  <span class="font-semibold text-on-surface">${formatINR(emp.hra || Math.round(gross * 0.2))}</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">Special / Other Allowances</span>
+                  <span class="font-semibold text-on-surface">${formatINR(emp.special_allowance || 0)}</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">Provident Fund (PF Deduction)</span>
+                  <span class="font-semibold text-error">-${formatINR(emp.pf_deduction || 1800)}</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">Tax / TDS</span>
+                  <span class="font-semibold text-error">-${formatINR(emp.tax_deduction || 0)}</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                  <span class="text-secondary">Professional Tax</span>
+                  <span class="font-semibold text-error">-${formatINR(emp.prof_tax || 200)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bank & Disbursal Details -->
+            <div class="bg-surface rounded-xl border border-outline-variant shadow-soft p-xl">
+              <h3 class="font-title-lg text-title-lg text-on-surface mb-lg flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">account_balance</span>
+                Disbursal & Bank Account
+              </h3>
+
+              <div class="space-y-4">
+                <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+                  <span class="text-xs text-secondary uppercase block font-semibold">Bank Name</span>
+                  <p class="font-title-md text-on-surface font-bold mt-0.5">${emp.bank_name || 'HDFC Bank'}</p>
+                </div>
+                <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+                  <span class="text-xs text-secondary uppercase block font-semibold">Account Number</span>
+                  <p class="font-title-md text-on-surface font-bold mt-0.5">${emp.bank_account_number || '50100432198765'}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+                    <span class="text-xs text-secondary uppercase block font-semibold">IFSC Code</span>
+                    <p class="font-title-md text-on-surface font-bold mt-0.5">${emp.ifsc_code || 'HDFC0001234'}</p>
+                  </div>
+                  <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+                    <span class="text-xs text-secondary uppercase block font-semibold">Payment Mode</span>
+                    <p class="font-title-md text-on-surface font-bold mt-0.5">${emp.payment_mode || 'Bank Transfer'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generated Payslips History -->
+          <div class="bg-surface rounded-xl border border-outline-variant shadow-soft overflow-hidden">
+            <div class="p-md border-b border-outline-variant flex justify-between items-center">
+              <div>
+                <h3 class="font-title-lg text-title-lg text-on-surface">Payslip History</h3>
+                <p class="text-xs text-secondary mt-0.5">Past payslips generated for this employee</p>
+              </div>
+              <button id="profile-generate-ps-btn" class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold hover:bg-on-primary-fixed-variant transition-colors flex items-center gap-1.5 shadow-soft">
+                <span class="material-symbols-outlined text-[16px]">add</span> Generate New Payslip
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-gray-50 border-b border-outline-variant">
+                    <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Pay Period</th>
+                    <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Gross Pay</th>
+                    <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Net In-Hand</th>
+                    <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider">Status</th>
+                    <th class="py-3 px-4 font-label-sm text-label-sm text-secondary uppercase tracking-wider text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[#F3F4F6] font-body-md text-on-surface">
+                  ${payslips.map(ps => `
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                      <td class="py-3 px-4">
+                        <div class="flex items-center gap-2">
+                          <span class="material-symbols-outlined text-primary text-[18px]">receipt</span>
+                          <span class="font-semibold">${ps.month_year}</span>
+                        </div>
+                        <span class="text-xs text-secondary ml-6">${ps.pay_period || 'Monthly'}</span>
+                      </td>
+                      <td class="py-3 px-4 font-medium">${formatINR(ps.monthly_gross)}</td>
+                      <td class="py-3 px-4 font-bold text-[#065F46]">${formatINR(ps.in_hand_monthly)}</td>
+                      <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${ps.status === 'paid' ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-[#FEF3C7] text-[#92400E]'}">
+                          ${ps.status === 'paid' ? 'Paid' : 'Pending'}
+                        </span>
+                      </td>
+                      <td class="py-3 px-4 text-right">
+                        <button class="profile-view-ps bg-primary/10 hover:bg-primary text-primary hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" data-id="${ps._id}">
+                          View & Print
+                        </button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                  ${payslips.length === 0 ? `
+                    <tr>
+                      <td colspan="5" class="py-8 text-center text-secondary">No payslips generated yet. Click "Generate New Payslip" above.</td>
+                    </tr>
+                  ` : ''}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="profile-modal-root"></div>
+      `;
+
+      // Wire edit salary package
+      document.getElementById('edit-salary-pkg-btn')?.addEventListener('click', () => {
+        openEditSalaryModal(emp);
+      });
+
+      // Wire generate payslip
+      document.getElementById('profile-generate-ps-btn')?.addEventListener('click', async () => {
+        try {
+          await api.payroll.generate({ employee_id: id, month_year: 'August 2026' });
+          showToast('Payslip generated successfully for August 2026', 'success');
+          renderPayrollTab(content);
+        } catch (err) {
+          showToast('Failed: ' + err.message, 'error');
+        }
+      });
+
+      // Wire view payslip
+      document.querySelectorAll('.profile-view-ps').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await showPayslipPopup(btn.dataset.id);
+        });
+      });
+
+    } catch (err) {
+      content.innerHTML = `<div class="p-8 text-center text-error">Failed to load salary details: ${err.message}</div>`;
+    }
+  }
+
+  function openEditSalaryModal(emp) {
+    const modalRoot = document.getElementById('profile-modal-root');
+    modalRoot.innerHTML = `
+      <div class="modal-overlay">
+        <div class="modal-box max-w-md w-full p-6 bg-white rounded-2xl shadow-2xl relative">
+          <div class="flex justify-between items-center pb-3 border-b border-gray-200 mb-4">
+            <h3 class="font-title-lg text-title-lg font-bold text-on-surface">Update Annual CTC</h3>
+            <button id="close-ctc-modal" class="text-secondary hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block font-label-md text-label-md text-secondary mb-1">Annual CTC (₹) *</label>
+              <input type="number" id="modal-ctc-input" value="${emp.ctc_annual || 600000}" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-3 py-2 rounded-lg font-bold text-lg focus:border-primary outline-none"/>
+            </div>
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <button id="cancel-ctc-modal" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface text-sm">Cancel</button>
+              <button id="save-ctc-modal" class="bg-primary text-on-primary px-5 py-2 rounded-lg font-title-md text-sm hover:bg-on-primary-fixed-variant shadow-soft">Update Package</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('close-ctc-modal').onclick = () => modalRoot.innerHTML = '';
+    document.getElementById('cancel-ctc-modal').onclick = () => modalRoot.innerHTML = '';
+    document.getElementById('save-ctc-modal').onclick = async () => {
+      const newCtc = Number(document.getElementById('modal-ctc-input').value);
+      try {
+        await api.payroll.updateEmployee(id, { ctc_annual: newCtc });
+        showToast('Compensation package updated', 'success');
+        modalRoot.innerHTML = '';
+        const content = document.getElementById('tab-content');
+        renderPayrollTab(content);
+      } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+      }
+    };
+  }
+
+  async function showPayslipPopup(psId) {
+    const modalRoot = document.getElementById('profile-modal-root');
+    try {
+      const data = await api.payroll.getPayslip(psId);
+      const { payslip, company } = data;
+
+      function formatINR(val) {
+        if (val === undefined || val === null || isNaN(val)) return '₹0';
+        return '₹' + Number(val).toLocaleString('en-IN');
+      }
+
+      modalRoot.innerHTML = `
+        <div class="modal-overlay">
+          <div class="modal-box max-w-2xl w-full p-8 bg-white rounded-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center pb-4 border-b border-gray-200 mb-4 print:hidden">
+              <span class="font-title-lg font-bold text-on-surface">Payslip – ${payslip.month_year}</span>
+              <div class="flex gap-2">
+                <button id="ps-popup-print" class="bg-primary text-white px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">print</span> Print</button>
+                <button id="ps-popup-close" class="text-secondary p-1"><span class="material-symbols-outlined">close</span></button>
+              </div>
+            </div>
+
+            <div class="border border-gray-300 rounded-xl p-6 bg-[#fafafa]">
+              <div class="flex justify-between items-start pb-4 border-b-2 border-primary">
+                <div>
+                  <h2 class="text-xl font-bold text-primary">${company.name}</h2>
+                  <p class="text-xs text-secondary">${company.address}</p>
+                </div>
+                <div class="text-right">
+                  <span class="bg-primary text-white text-[10px] uppercase font-bold px-2.5 py-1 rounded">Payslip</span>
+                  <p class="font-bold text-sm mt-1">${payslip.month_year}</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 py-3 border-b border-gray-200 text-xs">
+                <div><strong>Employee:</strong> ${payslip.employee_name} (${payslip.emp_code})</div>
+                <div><strong>Designation:</strong> ${payslip.designation}</div>
+                <div><strong>Department:</strong> ${payslip.department}</div>
+                <div><strong>Bank:</strong> ${payslip.bank_name} (${payslip.bank_account_number || '—'})</div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 my-4 text-xs">
+                <div class="bg-white p-3 rounded border border-gray-200">
+                  <span class="font-bold text-primary block mb-2 uppercase">Earnings</span>
+                  <div class="flex justify-between py-1"><span>Basic Salary</span><span>${formatINR(payslip.basic_salary)}</span></div>
+                  <div class="flex justify-between py-1"><span>HRA</span><span>${formatINR(payslip.hra)}</span></div>
+                  <div class="flex justify-between py-1"><span>Special Allowance</span><span>${formatINR(payslip.special_allowance)}</span></div>
+                  <div class="flex justify-between pt-2 font-bold border-t border-gray-100"><span>Gross</span><span>${formatINR(payslip.monthly_gross)}</span></div>
+                </div>
+                <div class="bg-white p-3 rounded border border-gray-200">
+                  <span class="font-bold text-error block mb-2 uppercase">Deductions</span>
+                  <div class="flex justify-between py-1"><span>PF</span><span>${formatINR(payslip.pf_deduction)}</span></div>
+                  <div class="flex justify-between py-1"><span>Tax (TDS)</span><span>${formatINR(payslip.tax_deduction)}</span></div>
+                  <div class="flex justify-between py-1"><span>PT</span><span>${formatINR(payslip.prof_tax || 200)}</span></div>
+                  <div class="flex justify-between pt-2 font-bold border-t border-gray-100"><span>Total Deductions</span><span>${formatINR(payslip.total_deductions)}</span></div>
+                </div>
+              </div>
+
+              <div class="bg-[#D1FAE5] p-3 rounded-lg flex justify-between items-center">
+                <span class="text-xs font-bold text-[#065F46] uppercase">Net In-Hand Pay</span>
+                <span class="text-2xl font-extrabold text-[#065F46]">${formatINR(payslip.in_hand_monthly)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('ps-popup-close').onclick = () => modalRoot.innerHTML = '';
+      document.getElementById('ps-popup-print').onclick = () => window.print();
+    } catch (err) {
+      showToast('Error loading payslip: ' + err.message, 'error');
+    }
   }
 }

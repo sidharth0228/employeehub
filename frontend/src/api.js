@@ -102,6 +102,18 @@ export const api = {
     updateStatus: (id, status, notes) => request(`/leave/${id}/status`, { method: 'PUT', body: JSON.stringify({ status, notes }) }),
   },
 
+  payroll: {
+    list: (params = {}) => {
+      const q = new URLSearchParams(params).toString();
+      return request(`/payroll${q ? '?' + q : ''}`);
+    },
+    getEmployee: (id) => request(`/payroll/employee/${id}`),
+    updateEmployee: (id, data) => request(`/payroll/employee/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    getPayslip: (id) => request(`/payroll/payslip/${id}`),
+    generate: (data) => request('/payroll/generate', { method: 'POST', body: JSON.stringify(data) }),
+    updateStatus: (id, status) => request(`/payroll/payslip/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  },
+
   settings: {
     get: () => request('/settings'),
     update: (data) => request('/settings', { method: 'PUT', body: JSON.stringify(data) }),

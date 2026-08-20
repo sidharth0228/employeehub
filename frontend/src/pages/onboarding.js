@@ -149,6 +149,34 @@ export default async function onboardingPage({ id }) {
             </div>
           </section>
 
+          <!-- Compensation & Bank Details Card -->
+          <section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-soft overflow-hidden">
+            <div class="p-md border-b border-outline-variant bg-surface flex justify-between items-center">
+              <h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">payments</span>
+                Compensation Package & Bank Details
+              </h3>
+            </div>
+            <div class="p-lg grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-lg gap-x-xl">
+              <div class="space-y-1">
+                <p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Annual CTC</p>
+                <p class="font-headline-md text-on-surface font-bold text-lg">₹${(employee.ctc_annual || 600000).toLocaleString('en-IN')}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Monthly Gross</p>
+                <p class="font-body-md text-on-surface font-semibold text-base">₹${(employee.monthly_gross || Math.round((employee.ctc_annual || 600000) / 12)).toLocaleString('en-IN')}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Net Monthly In-Hand</p>
+                <p class="font-body-md text-[#065F46] font-bold text-base">₹${(employee.in_hand_monthly || Math.round((employee.ctc_annual || 600000) * 0.85 / 12)).toLocaleString('en-IN')}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Bank Account</p>
+                <p class="font-body-md text-on-surface font-medium">${employee.bank_name || 'HDFC Bank'} · ${employee.bank_account_number || '50100432198765'}</p>
+              </div>
+            </div>
+          </section>
+
           <!-- Document Verification Summary -->
           <section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-soft overflow-hidden">
             <div class="p-md border-b border-outline-variant bg-surface flex flex-col md:flex-row md:justify-between md:items-center gap-md">
